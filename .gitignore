@@ -11,3 +11,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Archivos temporales de Microsoft Office
+~$*.docx
