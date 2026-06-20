@@ -1,0 +1,25 @@
+{
+  "name": "control-invernadero",
+  "version": "1.0.0",
+  "description": "Sistema de control automático de invernadero con Arduino",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arialbitres/Control-Invernadero.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arialbitres/Control-Invernadero/issues"
+  },
+  "homepage": "https://github.com/arialbitres/Control-Invernadero#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "serialport": "^13.0.0",
+    "socket.io": "^4.8.3"
+  }
+}

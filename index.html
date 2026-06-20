@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Cliente - Invernadero</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #fafafa; padding: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-block; margin: 10px; min-width: 320px; vertical-align: top; }
+        button { padding: 10px 15px; margin: 5px; font-size: 14px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; }
+        progress { width: 100%; height: 25px; }
+        #estadoActual { font-weight: bold; color: #007bff; }
+        .btn-simular { background: #ffe0b2; border: 1px solid #ffb74d; }
+    </style>
+</head>
+<body>
+
+    <h1>Dashboard Cliente (Vista Recibida)</h1>
+    <p>Conexión Presentador: <span id="statusRed" style="color: red; font-weight: bold;">Desconectado 🔴</span></p>
+
+    <br>
+
+    <div class="card">
+        <h2>Acciones de Control</h2>
+        <button onclick="emitirComando('e0')">Enviar e0 (Config)</button>
+        <button onclick="emitirComando('e1')">Enviar e1 (Seco)</button>
+        <button onclick="emitirComando('e2')">Enviar e2 (Húmedo)</button>
+        <p>Vista de Estado: <span id="estadoActual">Cargando...</span></p>
+    </div>
+
+    <div class="card">
+        <h2>Indicadores de Humedad</h2>
+        <progress id="barraHumedad" value="0" max="1023"></progress>
+        <p>Valor en pantalla: <span id="valorHumedad">0</span></p>
+    </div>
+
+    <br><br>
+
+    <div class="card" style="border: 2px dashed #ff9800; display: block; margin: 20px auto; max-width: 500px;">
+        <h3 style="color: #e65100; margin-top: 0;">Inyector de Datos Manual</h3>
+        <button class="btn-simular" onclick="inyectarLocal('medida:50')">Simular Humedad Crítica (<70)</button>
+        <button class="btn-simular" onclick="inyectarLocal('medida:450')">Simular Humedad Óptima (>100)</button>
+    </div>
+
+    <script>
+        const socket = io("http://localhost:3000");
+
+        socket.on('connect', () => {
+            document.getElementById("statusRed").innerText = "Conectado al Presentador 🟢";
+            document.getElementById("statusRed").style.color = "green";
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById("statusRed").innerText = "Desconectado 🔴";
+            document.getElementById("statusRed").style.color = "red";
+        });
+
+        // El presentador nos dice exactamente qué mostrar
+        socket.on('presentar-estado', (estado) => {
+            let texto = "Estado " + estado;
+            if(estado === "0") texto += " (Configuración)";
+            if(estado === "1") texto += " (Tierra Seca 🔴)";
+            if(estado === "2") texto += " (Tierra Húmeda 🟢)";
+            document.getElementById("estadoActual").innerHTML = texto;
+        });
+
+        socket.on('presentar-medida', (valor) => {
+            document.getElementById("barraHumedad").value = valor;
+            document.getElementById("valorHumedad").innerText = valor;
+        });
+
+        function emitirComando(cmd) {
+            socket.emit('comando-cliente', cmd);
+        }
+
+        function inyectarLocal(dato) {
+            let valor = dato.split(":")[1];
+            document.getElementById("barraHumedad").value = valor;
+            document.getElementById("valorHumedad").innerText = valor;
+            // Mandamos el aviso al servidor de lo que pasó mockeado
+            socket.emit('comando-cliente', valor < 70 ? 'e1' : 'e2');
+        }
+    </script>
+</body>
+</html>
