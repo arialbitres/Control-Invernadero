@@ -4,6 +4,7 @@
   "description": "Sistema de control automático de invernadero con Arduino",
   "main": "index.js",
   "scripts": {
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./iniciar.ps1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

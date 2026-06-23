@@ -1,19 +1,24 @@
 #include <Servo.h>
 
-// Entradas
-const byte PIN_HUMEDAD = A0;
-const byte PIN_LUZ = A1;
+// Entradas actualizadas según el montaje físico.
+const byte PIN_LDR = A0;
+const byte PIN_HUMEDAD = A1;
 
-// Salidas
-const byte PIN_SERVO = 9;
+// Salidas actualizadas.
+const byte PIN_SERVO = 3;
+const byte PIN_LED_HUMEDO = 5;
 const byte PIN_LED_SECO = 6;
-const byte PIN_LED_HUMEDO = 7;
-const byte PIN_BUZZER = 5;
 
-// Estos valores deben calibrarse con la tierra y el sensor reales.
-const int UMBRAL_SECO = 650;
-const int UMBRAL_HUMEDO = 500;
+// Deben ajustarse luego de medir el sensor en tierra seca y húmeda.
+// En este montaje una lectura baja representa tierra seca.
+const int UMBRAL_SECO = 70;
+const int UMBRAL_HUMEDO = 100;
+const unsigned long ESPERA_CONFIG_MS = 2000;
 const unsigned long INTERVALO_REPORTE_MS = 1000;
+
+const byte SERVO_CONFIG = 180;
+const byte SERVO_RIEGO_ABIERTO = 0;
+const byte SERVO_RIEGO_CERRADO = 90;
 
 enum Estado {
   CONFIGURACION = 0,
@@ -21,103 +26,87 @@ enum Estado {
   TIERRA_HUMEDA = 2
 };
 
-Servo valvula;
-String frasePC;
+Servo miMotor;
 Estado estado = CONFIGURACION;
-unsigned long tiempoEstado = 0;
+unsigned long inicioEstado = 0;
 unsigned long ultimoReporte = 0;
 
 void setup() {
   Serial.begin(9600);
   Serial.setTimeout(10);
 
+  pinMode(PIN_LDR, INPUT);
   pinMode(PIN_HUMEDAD, INPUT);
-  pinMode(PIN_LUZ, INPUT);
-  pinMode(PIN_LED_SECO, OUTPUT);
   pinMode(PIN_LED_HUMEDO, OUTPUT);
-  pinMode(PIN_BUZZER, OUTPUT);
-  valvula.attach(PIN_SERVO);
+  pinMode(PIN_LED_SECO, OUTPUT);
 
-  Serial.println("Conectados");
+  miMotor.attach(PIN_SERVO);
+  Serial.println("Conectados y listos");
   cambiarEstado(CONFIGURACION);
 }
 
 void loop() {
-  leerComandos();
+  leerComando();
 
   int humedad = analogRead(PIN_HUMEDAD);
-  if (estado == CONFIGURACION) ejecutarConfiguracion(humedad);
-  if (estado == TIERRA_SECA) ejecutarTierraSeca(humedad);
-  if (estado == TIERRA_HUMEDA) ejecutarTierraHumeda(humedad);
-
+  ejecutarEstado(humedad);
   reportarSensores(humedad);
+
   delay(100);
-  tiempoEstado += 100;
 }
 
-void leerComandos() {
+void leerComando() {
   if (!Serial.available()) return;
 
-  frasePC = Serial.readString();
-  frasePC.trim();
+  String comando = Serial.readString();
+  comando.trim();
 
-  if (frasePC == "e0") cambiarEstado(CONFIGURACION);
-  if (frasePC == "e1") cambiarEstado(TIERRA_SECA);
-  if (frasePC == "e2") cambiarEstado(TIERRA_HUMEDA);
+  if (comando == "e0") cambiarEstado(CONFIGURACION);
+  else if (comando == "e1") cambiarEstado(TIERRA_SECA);
+  else if (comando == "e2") cambiarEstado(TIERRA_HUMEDA);
 }
 
-void ejecutarConfiguracion(int humedad) {
-  // Espera breve para estabilizar el sensor y luego decide el estado inicial.
-  if (tiempoEstado < 2000) return;
-  if (humedad >= UMBRAL_SECO) cambiarEstado(TIERRA_SECA);
-  else cambiarEstado(TIERRA_HUMEDA);
-}
+void ejecutarEstado(int humedad) {
+  if (estado == CONFIGURACION) {
+    if (millis() - inicioEstado < ESPERA_CONFIG_MS) return;
 
-void ejecutarTierraSeca(int humedad) {
-  // Histéresis: el riego se detiene recién al alcanzar el umbral húmedo.
-  if (humedad <= UMBRAL_HUMEDO) cambiarEstado(TIERRA_HUMEDA);
-}
+    if (humedad <= UMBRAL_SECO) cambiarEstado(TIERRA_SECA);
+    else cambiarEstado(TIERRA_HUMEDA);
+    return;
+  }
 
-void ejecutarTierraHumeda(int humedad) {
-  // El riego vuelve a activarse recién al superar el umbral seco.
-  if (humedad >= UMBRAL_SECO) cambiarEstado(TIERRA_SECA);
+  // Histéresis: evita cambios continuos cuando la lectura ronda el límite.
+  if (estado == TIERRA_SECA && humedad >= UMBRAL_HUMEDO) {
+    cambiarEstado(TIERRA_HUMEDA);
+  } else if (estado == TIERRA_HUMEDA && humedad <= UMBRAL_SECO) {
+    cambiarEstado(TIERRA_SECA);
+  }
 }
 
 void cambiarEstado(Estado nuevoEstado) {
   estado = nuevoEstado;
-  tiempoEstado = 0;
+  inicioEstado = millis();
 
   digitalWrite(PIN_LED_SECO, estado == TIERRA_SECA ? HIGH : LOW);
   digitalWrite(PIN_LED_HUMEDO, estado == TIERRA_HUMEDA ? HIGH : LOW);
 
-  if (estado == CONFIGURACION) {
-    valvula.write(0);
-    noTone(PIN_BUZZER);
-  }
+  if (estado == CONFIGURACION) miMotor.write(SERVO_CONFIG);
+  else if (estado == TIERRA_SECA) miMotor.write(SERVO_RIEGO_ABIERTO);
+  else miMotor.write(SERVO_RIEGO_CERRADO);
 
-  if (estado == TIERRA_SECA) {
-    valvula.write(90); // Abre el mecanismo de riego.
-    tone(PIN_BUZZER, 1200, 200);
-  }
-
-  if (estado == TIERRA_HUMEDA) {
-    valvula.write(0); // Cierra el mecanismo de riego.
-    noTone(PIN_BUZZER);
-  }
-
-  // Formato compatible con conectar-hardware.php.
+  // Formato que interpreta conectar-hardware.php.
   Serial.print("Estado=");
-  Serial.println((int) estado);
+  Serial.println((int)estado);
 }
 
 void reportarSensores(int humedad) {
   if (millis() - ultimoReporte < INTERVALO_REPORTE_MS) return;
   ultimoReporte = millis();
 
+  // El dashboard reconoce la etiqueta "medida:".
   Serial.print("medida:");
   Serial.println(humedad);
 
-  // Canal preparado para una futura ampliación del dashboard.
   Serial.print("luz:");
-  Serial.println(analogRead(PIN_LUZ));
+  Serial.println(analogRead(PIN_LDR));
 }

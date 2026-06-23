@@ -7,13 +7,19 @@
 - Arduino compatible conectado por USB y programado con `arduino/control_invernadero/control_invernadero.ino`.
 - Componentes conectados según `docs/CONEXIONES.md`.
 
-## 2. Instalación
+## 2. Instalación y puesta en marcha
 
 1. Abrir una terminal en la raíz del repositorio.
-2. Ejecutar `npm install` para instalar Socket.IO y Express.
-3. Iniciar el servidor de tiempo real con `node server.js`.
-4. En otra terminal, iniciar PHP con `php -S 127.0.0.1:8000`.
-5. Abrir `http://127.0.0.1:8000/index.php`.
+2. Iniciar todo el sistema con `.\iniciar.bat`.
+3. Abrir `http://localhost:8000` en Google Chrome o Microsoft Edge.
+
+El iniciador levanta automáticamente la aplicación PHP en el puerto 8000 y
+Socket.IO en el puerto 3000. La primera vez también instala las dependencias de
+Node.js. No hace falta abrir una segunda terminal.
+
+Si Windows indica que no encuentra PHP, instalarlo con
+`winget install PHP.PHP.8.4`, cerrar y volver a abrir PowerShell y ejecutar
+otra vez `.\iniciar.bat`.
 
 ## 3. Inicio de sesión
 
@@ -45,7 +51,9 @@ El navegador debe ejecutarse en `localhost` o en un origen HTTPS. Cerrar el moni
 
 | Problema | Verificación |
 |---|---|
-| El dashboard no cambia | Confirmar que `server.js` esté activo en el puerto 3000. |
+| Windows indica que no reconoce PHP | Ejecutar `winget install PHP.PHP.8.4`, volver a abrir PowerShell y ejecutar `.\iniciar.bat`. |
+| La página no abre | Confirmar que la terminal muestre `http://localhost:8000` y que el puerto 8000 esté libre. |
+| El dashboard no cambia | Cerrar el iniciador con `Ctrl+C`, volver a ejecutar `.\iniciar.bat` y comprobar que el puerto 3000 esté libre. |
 | No aparece el puerto USB | Usar Chrome/Edge, revisar el cable y los controladores del Arduino. |
 | El puerto está ocupado | Cerrar el monitor serial y otras aplicaciones que usen el puerto. |
 | Los valores parecen invertidos | Calibrar `UMBRAL_SECO` y `UMBRAL_HUMEDO` con muestras reales. |
@@ -53,4 +61,6 @@ El navegador debe ejecutarse en `localhost` o en un origen HTTPS. Cerrar el moni
 
 ## 7. Apagado seguro
 
-Desconectar el componente WebSerial, detener los servidores con `Ctrl+C` y recién después retirar el cable USB o la alimentación externa.
+Desconectar el componente WebSerial y presionar `Ctrl+C` en la ventana del
+iniciador. Esto detiene PHP y Socket.IO. Recién después, retirar el cable USB o
+la alimentación externa.

@@ -6,19 +6,29 @@ al hardware desde un dashboard protegido por sesión.
 
 ## Ejecución
 
-```powershell
-npm install
-node server.js
-```
-
-En otra terminal:
+Para iniciar todo el sistema:
 
 ```powershell
-php -S 127.0.0.1:8000
+.\iniciar.bat
 ```
 
-Abrir `http://127.0.0.1:8000/index.php`. Las credenciales académicas son
-`abc` / `1234`.
+Abrir `http://localhost:8000`. Las credenciales académicas son `abc` / `1234`.
+El comando inicia la aplicación PHP y el servidor de comunicación. Para detener
+ambos, presionar `Ctrl+C`. La primera vez también instala automáticamente las
+dependencias de Node.js.
+
+### Si aparece "php no se reconoce"
+
+PHP no está instalado o no figura en el `PATH` de Windows. Instalarlo con:
+
+```powershell
+winget install PHP.PHP.8.4
+```
+
+Después, cerrar y volver a abrir PowerShell y ejecutar `.\iniciar.bat`.
+
+Importante: una dirección como `[localhost:8000](http://localhost:8000)` es un
+enlace Markdown y no forma parte de un comando de PowerShell.
 
 ## Documentación
 

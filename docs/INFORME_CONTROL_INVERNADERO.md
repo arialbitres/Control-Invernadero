@@ -232,14 +232,17 @@ window.eventosArduino = {
 # 10. Guía para el usuario
 
 1. Conectar y programar el Arduino según el esquema.
-2. Ejecutar `npm install` la primera vez.
-3. Iniciar `node server.js`.
-4. Iniciar `php -S 127.0.0.1:8000` en otra terminal.
-5. Abrir `http://127.0.0.1:8000/index.php` en Chrome o Edge.
-6. Ingresar con `abc` y `1234`.
-7. Abrir el puente, presionar **Conectar** y seleccionar el puerto.
-8. Regresar al dashboard para observar medidas y estados.
-9. Al finalizar, desconectar el puerto, cerrar sesión y detener ambos servidores.
+2. Ejecutar `.\iniciar.bat`; la primera vez instalará las dependencias y luego
+   iniciará PHP y Socket.IO conjuntamente.
+3. Abrir `http://localhost:8000` en Chrome o Edge.
+4. Ingresar con `abc` y `1234`.
+5. Abrir el puente, presionar **Conectar** y seleccionar el puerto.
+6. Regresar al dashboard para observar medidas y estados.
+7. Al finalizar, desconectar el puerto, cerrar sesión y presionar `Ctrl+C` en
+   la ventana del iniciador.
+
+Si Windows no encuentra PHP, se instala con `winget install PHP.PHP.8.4`. Luego
+se debe volver a abrir PowerShell y ejecutar `.\iniciar.bat`.
 
 La guía ampliada y la solución de problemas están en `docs/GUIA_USUARIO.md`.
 

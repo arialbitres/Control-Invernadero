@@ -26,6 +26,7 @@
 - [ ] Verificar los tres estados automáticos.
 - [ ] Probar los comandos `e0`, `e1` y `e2` desde el dashboard.
 - [ ] Probar login, logout y bloqueo del puente sin sesión.
+- [ ] Iniciar el sistema con `.\iniciar.bat` y abrir `http://localhost:8000`.
 - [ ] Confirmar que PHP use el puerto 8000 y Socket.IO el puerto 3000.
 
 ## Regeneración del informe
