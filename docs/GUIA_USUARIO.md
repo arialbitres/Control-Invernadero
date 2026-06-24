@@ -1,66 +1,88 @@
-# Guía de usuario — Control de Invernadero IoT
+# **Guía de Usuario: Sistema de Control de Invernadero IoT**
 
-## 1. Requisitos
+Esta guía contiene los pasos necesarios para instalar, configurar y operar el prototipo de automatización y monitoreo de riego.
 
-- Windows con PHP 8.4 o posterior, Node.js y npm.
-- Google Chrome o Microsoft Edge con soporte para WebSerial.
-- Arduino compatible conectado por USB y programado con `arduino/control_invernadero/control_invernadero.ino`.
-- Componentes conectados según `docs/CONEXIONES.md`.
+## **1\. Requisitos Previos**
 
-## 2. Instalación y puesta en marcha
+Antes de comenzar, asegurarse de contar con los siguientes elementos:
 
-1. Abrir una terminal en la raíz del repositorio.
-2. Iniciar todo el sistema con `.\iniciar.bat`.
-3. Abrir `http://localhost:8000` en Google Chrome o Microsoft Edge.
+* **Sistema Operativo:** Windows con **Node.js**, **npm** y **PHP 8.4** (o superior) instalados.  
+* **Navegador Web:** Google Chrome o Microsoft Edge (requeridos para el soporte de la API *WebSerial*).  
+* **Hardware:** Tarjeta Arduino compatible, conectada por USB y previamente programada con el firmware ubicado en arduino/control\_invernadero/control\_invernadero.ino.  
+* **Conexiones:** Componentes electrónicos ensamblados según las especificaciones de docs/CONEXIONES.md.
 
-El iniciador levanta automáticamente la aplicación PHP en el puerto 8000 y
-Socket.IO en el puerto 3000. La primera vez también instala las dependencias de
-Node.js. No hace falta abrir una segunda terminal.
+## **2\. Instalación y Puesta en Marcha**
 
-Si Windows indica que no encuentra PHP, instalarlo con
-`winget install PHP.PHP.8.4`, cerrar y volver a abrir PowerShell y ejecutar
-otra vez `.\iniciar.bat`.
+El sistema cuenta con un script de automatización que simplifica el despliegue de los servicios.
 
-## 3. Inicio de sesión
+1. **Abrir la terminal:** Navegá hasta la raíz del repositorio usando PowerShell o la terminal de tu preferencia.  
+2. **Iniciar el sistema:** Ejecutar el comando: “.\\iniciar.bat”  
+   *Nota: La primera vez, el script instalará automáticamente las dependencias de Node.js. Luego, levantará la aplicación PHP (puerto 8000\) y el servidor Socket.IO (puerto 3000\) de forma conjunta. No es necesario abrir terminales adicionales.*  
+3. **Acceder a la app:** Abrí tu navegador e ingresá a: http://localhost:8000
 
-- Usuario de demostración: `abc`
-- Contraseña de demostración: `1234`
+**ATENCIÓN ¿Windows no reconoce el comando PHP?**
 
-Estas credenciales están incorporadas únicamente con fines académicos. En una versión productiva deben reemplazarse por usuarios almacenados de forma segura y contraseñas con hash.
+Si la terminal devuelve un error, ejecutar winget install PHP.PHP.8.4. Una vez finalizado, cerrá la terminal, volvé a abrirla en la raíz del proyecto y ejecutar nuevamente .\\iniciar.bat.
 
-## 4. Conexión del Arduino
+## **3\. Control de Acceso (Inicio de Sesión)**
 
-1. Iniciar sesión.
-2. Elegir **Abrir Puente Hardware**.
-3. Presionar **Conectar** dentro del componente Arduino.
-4. Seleccionar el puerto USB correspondiente y aceptar.
-5. Mantener abierta la pestaña del puente mientras se utiliza el dashboard.
+Para ingresar al panel de control, utilizar las siguientes credenciales de prueba:
 
-El navegador debe ejecutarse en `localhost` o en un origen HTTPS. Cerrar el monitor serial del IDE de Arduino antes de conectar, ya que un puerto serial no puede ser utilizado por dos aplicaciones simultáneamente.
+* **Usuario:** abc  
+* **Contraseña:** 1234
 
-## 5. Uso del dashboard
+**Nota de seguridad:** Estas credenciales están integradas con fines estrictamente académicos. Para un entorno de producción, deben reemplazarse por un sistema de almacenamiento seguro en base de datos y contraseñas encriptadas con funciones de hash.
 
-- **Medida del sensor:** muestra la lectura de humedad convertida de 0–1023 a 0–5 V.
-- **Estado de la MEF:** indica configuración, tierra seca o tierra húmeda.
-- **Forzar Config (e0):** lleva el controlador al estado de configuración.
-- **Forzar Seco (e1):** abre el mecanismo de riego y activa la señal de suelo seco.
-- **Forzar Húmedo (e2):** cierra el mecanismo de riego y activa la señal de suelo húmedo.
-- **Cerrar sesión:** finaliza la sesión PHP e impide acceder al puente sin autenticación.
+## **4\. Vinculación del Hardware (Puente WebSerial)**
 
-## 6. Solución de problemas
+Para que el panel web pueda comunicarse con el Arduino, es indispensable activar el puente de comunicación:
 
-| Problema | Verificación |
-|---|---|
-| Windows indica que no reconoce PHP | Ejecutar `winget install PHP.PHP.8.4`, volver a abrir PowerShell y ejecutar `.\iniciar.bat`. |
-| La página no abre | Confirmar que la terminal muestre `http://localhost:8000` y que el puerto 8000 esté libre. |
-| El dashboard no cambia | Cerrar el iniciador con `Ctrl+C`, volver a ejecutar `.\iniciar.bat` y comprobar que el puerto 3000 esté libre. |
-| No aparece el puerto USB | Usar Chrome/Edge, revisar el cable y los controladores del Arduino. |
-| El puerto está ocupado | Cerrar el monitor serial y otras aplicaciones que usen el puerto. |
-| Los valores parecen invertidos | Calibrar `UMBRAL_SECO` y `UMBRAL_HUMEDO` con muestras reales. |
-| Los comandos no llegan | Mantener abierta y conectada la pestaña `conectar-hardware.php`. |
+1. Iniciá sesión en la plataforma.  
+2. En el menú principal, seleccioná **Abrir Puente Hardware**.  
+3. Dentro del componente de Arduino, presioná el botón **Conectar**.  
+4. Seleccioná el puerto COM asignado a tu Arduino en la lista desplegable del navegador y confirmá.  
+5. **Importante:** Mantener esta pestaña abierta durante todo el tiempo que utilices el dashboard.
 
-## 7. Apagado seguro
+**Restricción de puerto:** Asegurarse de cerrar el Monitor Serie del IDE de Arduino (o cualquier otro software de telemetría) antes de conectar. El puerto serial es de acceso exclusivo y no puede ser compartido por dos aplicaciones en simultáneo. El navegador exige además un origen seguro (localhost o protocolo HTTPS).
 
-Desconectar el componente WebSerial y presionar `Ctrl+C` en la ventana del
-iniciador. Esto detiene PHP y Socket.IO. Recién después, retirar el cable USB o
-la alimentación externa.
+## **5\. Operación del Dashboard**
+
+Una vez vinculado el hardware, tendrás acceso a las siguientes lecturas y controles en tiempo real:
+
+### **Monitoreo**
+
+* **Medida del sensor:** Muestra la lectura actual de humedad en el suelo, convertida del valor bruto (0–1023) a escala de tensión (0–5 V).  
+* **Estado de la MEF:** Visualiza el estado activo de la Máquina de Estados Finitos (Configuración, Tierra Seca o Tierra Húmeda).
+
+### **Controles Manuales (Modo Demostración)**
+
+* **Forzar Config (e0):** Pone al controlador en estado de configuración/espera.  
+* **Forzar Seco (e1):** Abre de forma forzada el mecanismo de riego y simula la alerta de suelo seco.  
+* **Forzar Húmedo (e2):** Cierra el mecanismo de riego y simula el estado de suelo hidratado.
+
+**Cerrar sesión:** Finaliza la sesión de PHP de forma segura, bloqueando inmediatamente el acceso al puente de hardware a usuarios no autenticados.
+
+## **6\. Resolución de Problemas Frecuentes**
+
+| Síntoma / Problema | Causa Probable | Acción Correctiva |
+| :---- | :---- | :---- |
+| **"PHP no se reconoce como un comando..."** | PHP no está instalado o no se encuentra en las variables de entorno. | Ejecutá winget install PHP.PHP.8.4, reiniciá la terminal de PowerShell y reintentá el inicio. |
+| **La página web no carga (HTTP 404 / Rechazado)** | El servidor web local no inició correctamente. | Verificá en la terminal que se muestre la dirección del servidor y que el puerto 8000 no esté siendo usado por otra app. |
+| **El dashboard se congela o no actualiza los datos** | Error en el servidor de eventos en tiempo real. | Cerrá el proceso actual en la terminal (Ctrl \+ C), asegurate de tener libre el puerto 3000 y relanzá .\\iniciar.bat. |
+| **No figura la placa Arduino en la lista de puertos** | Problema de conexión física o navegador incompatible. | Asegurate de usar Chrome/Edge. Revisá el cable USB y los controladores (drivers) de la placa. |
+| **Error: Puerto bloqueado u ocupado** | Conflicto de software por el acceso al puerto COM. | Cerrá el Monitor Serie del IDE de Arduino y cualquier otra aplicación de control industrial o comunicación serial. |
+| **Los valores de humedad se leen de forma invertida** | Falta de calibración en el entorno real. | Ajustá las variables UMBRAL\_SECO y UMBRAL\_HUMEDO en el código del Arduino según las muestras de tu suelo. |
+| **Los comandos de control manual no surten efecto** | Desconexión en el canal de retransmisión web. | Asegurate de que la pestaña conectar-hardware.php permanezca abierta y con el estado "Conectado". |
+
+## 
+
+## 
+
+## **7\. Apagado Seguro del Sistema**
+
+Para finalizar la sesión de trabajo sin corromper procesos, seguir este orden:
+
+1. Desconectar el puerto desde el componente *WebSerial* en el navegador.  
+2. Dirigirse a la ventana de la terminal donde corre el script y presionar **Ctrl \+ C** para detener en limpio los servidores PHP y Socket.IO.  
+3. Una vez cerrados los servicios de software, puede retirar con seguridad el cable USB del Arduino o desconectar su fuente de alimentación.
+
