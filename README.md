@@ -39,6 +39,3 @@ enlace Markdown y no forma parte de un comando de PowerShell.
 - [Diagramas](docs/DIAGRAMAS.md)
 - [Checklist de entrega](docs/CHECKLIST_ENTREGA.md)
 - [Firmware Arduino](arduino/control_invernadero/control_invernadero.ino)
-
-Antes de entregar, completar los nombres de integrantes y agregar fotografías
-reales del prototipo en el anexo del informe.
